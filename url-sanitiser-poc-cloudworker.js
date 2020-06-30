@@ -4,16 +4,16 @@ addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   // Checking if protocol is HTTPS, if not - change to HTTPS
-  let protocol = url.protocol === 'https:' ? url.protocol : 'https:';
+  const protocol = url.protocol === 'https:' ? url.protocol : 'https:';
 
   // Checking if hostname is what we want it to be, if not - change to what we want
-  let hostname = url.hostname === 'www.example.com' ? url.hostname : 'www.example.com';
+  const hostname = url.hostname === 'www.example.com' ? url.hostname : 'www.example.com';
 
   // Ensuring that full path is lowercase
-  let pathname = url.pathname.toLowerCase();
+  const pathname = url.pathname.toLowerCase();
 
   // Get the QSP, so we don't lose tracking parameters etc
-  let search = url.search;
+  const search = url.search;
 
   // Construct the new URL as a nice object.
   const newURL = new URL(protocol+'//'+hostname+pathname+search);
