@@ -36,11 +36,11 @@ addEventListener('fetch', event => {
 })
 
 // Do your normal stuff
-async function handleRequest(request) {
+const handleRequest =  async (request) => {
   return new Response('hello world', {status: 200})
 }
 
 // Redirect to sanitised URL
-async function redirectRequest(request) {
+const redirectRequest =  async (request) => {
   return Response.redirect(request, 301)
 }
