@@ -1,5 +1,8 @@
 addEventListener('fetch', event => {
 
+  // confi flag to check whether we always want a trailing slash or not. In this case, we want a trailing slash
+  const trailing = true;
+
   // Retrieving the requested URL from the event and saving it as a const to check change later
   const url = new URL(event.request.url);
 
@@ -10,13 +13,20 @@ addEventListener('fetch', event => {
   const hostname = url.hostname === 'www.example.com' ? url.hostname : 'www.example.com';
 
   // Ensuring that full path is lowercase
-  const pathname = url.pathname.toLowerCase();
+  let pathname = url.pathname.toLowerCase();
+
+  // check the configuration of the trailing slash and handle it.
+  if(trailing==true){
+    pathname = pathname.substr(-1) === '/' ? pathname : pathname+'/';
+  }else{
+    pathname = pathname.substr(-1) === '/' ? pathname.slice(0, -1) : pathname;
+  }
 
   // Get the QSP, so we don't lose tracking parameters etc
   const search = url.search;
 
   // Construct the new URL as a nice object.
-  const newURL = new URL(protocol+'//'+hostname+pathname+search);
+  const newURL = new URL(protocol + '//' + hostname + pathname + search);
 
 
   // Console logging for checks
