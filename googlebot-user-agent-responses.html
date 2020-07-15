@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Can we change content and styling based on user-agent?</title>
+    <style>
+      #square{
+        width:100px;
+        height:100px;
+        background:black;
+      }
+      table{
+        border-collapse:collapse;
+      }
+      table td,
+      table th{
+        padding:10px;
+        border:1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <section>
+      <h1>Background</h1>
+      <p>Below is a section that will change styling based on a few user-agents. We have the following user-agents, each of them changes the content and styling differently.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>User-agent string containing</th><th>Heading</th><th>Sentence</th><th>Colour element</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><em>(default)</em></td><td>I am the normal title</td><td>I am the default boring text. This is when there has been no match.</td><td>black</td>
+          </tr>
+          <tr>
+            <td>googlebot</td><td>Search engine is here!</td><td>Don't fear, a search engine is here. This uses 'indexOf' within JS. This uses RegEx within JS.</td><td>red</td>
+          </tr>
+          <tr>
+            <td>bingbot</td><td>Search engine is here!</td><td>Don't fear, a search engine is here. This uses RegEx within JS.</td><td>red</td>
+          </tr>
+          <tr>
+            <td>autokevin</td><td>Random string</td><td>This user-agent doesn't even exist. This uses 'indexOf' within JS.</td><td>green</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+    <section>
+      <h2>How to test (Chrome)</h2>
+      <ol>
+        <li>Open dev tools</li>
+        <li>Open drawer (press ESC)</li>
+        <li>Open 'Network conditions'
+          <ul>
+            <li>If not present, press the 3 dots at the left</li>
+          </ul>
+        </li>
+        <li>Set user-agent to 'Custom' and insert a string containing the user-agent to try</li>
+      </ol>
+    </section>
+    <section>
+      <h2>The test</h2>
+      <h3 id="title"><em>I am the normal title</em></h3>
+      <p id="sentence"><em>I am the default boring text. This is when there has been no match.</em></p>
+      <p>I am user-agent agent: <span id="ua"><em>[tbc]</em></span></p>
+      <div id="square"></div>
+    </section>
+    <script>
+      'use strict';
+
+      const changeContent = () => {
+
+        // Let's first display the full user-agent in the test section. Always useful.
+        document.getElementById('ua').innerHTML = navigator.userAgent;
+
+        // Check if the user-agent has 'googlebot' in the string
+        if(navigator.userAgent.toLowerCase().match(/(googlebot|bingbot)/i)){
+          // change the title
+          document.getElementById('title').innerHTML = 'Search engine is here!';
+          // change the sentence
+          document.getElementById('sentence').innerHTML = 'Don\'t fear, a search engine is here. This uses RegEx within JS.';
+          // change the background colour
+          document.getElementById('square').style.background = 'red';
+        }
+
+        // Repeat for 'autokevin'
+        if(navigator.userAgent.toLowerCase().indexOf('autokevin') !== -1){
+          // change the title
+          document.getElementById('title').innerHTML = 'Random string';
+          // change the sentence
+          document.getElementById('sentence').innerHTML = 'This user-agent doesn\'t even exist. This uses \'indexOf\' within JS.';
+          // change the background colour
+          document.getElementById('square').style.background = 'green';
+        }
+
+      }
+      changeContent();
+    </script>
+  </body>
+</html>
