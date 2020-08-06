@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PLP with lazy-loading squares (products) - Button - Page 1 - Proof of concept | Croud</title>
+    <style>
+      .container{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 5px;
+        row-gap: 5px;
+        max-width:750px;
+      }
+
+      .square{
+        position: relative;
+        background: rgba(0,100,0,.5);
+      }
+
+      .square:nth-of-type(odd){
+        background: rgba(0,0,100,.5);
+      }
+
+      /* Making squares square */
+      .square::before{
+        content: '';
+        padding-bottom: 100%;
+        display: block;
+      }
+
+      .square > span{
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        text-align: center;
+      }
+
+      input{
+        margin:25px 0;
+      }
+
+      /* Hiding pagination */
+      .pagination{
+        display:none;
+      }
+
+    </style>
+  </head>
+  <body >
+    <h1>Page 1: PLP with lazy-loading squares/products - using user-interaction</h1>
+    <p>When a user scrolls to the bottom of the page, there will be a button that will load an additional 9 squares (products). Search engines will be able to crawl the page and identify all paginated pages.</p>
+    <h2>Notes</h2>
+    <p>Search engines will ignore the lazy-loading mechanics of a page, in both cases when a <em>'load more'</em> button is used or whether it is based on scroll-behaviour, hence a solution with HTML pagination should be implemented. This concept has the front-end functionality implemented for users to see more squares while HTML links hidden in the source code will provide search engine support.</p>
+    <p>Failing to implement HTML pagination support for search engines will result in subsequent category pages not to be crawled; ultimately resulting in more products not being discovered and could cause serious crawl issues.</p>
+    <h3>Documentation</h3>
+    <ul>
+      <li>Google Developers - Lazy loading: <a href="https://developers.google.com/search/docs/guides/lazy-loading" target="_blank" rel="noreferrer">https://developers.google.com/search/docs/guides/lazy-loading</a>
+    </ul>
+    <section>
+      <h2>Squares - Page 1</h2>
+      <div id="square-container" class="container">
+        <div class="square">
+          <span>Square 1</span>
+        </div>
+        <div class="square">
+          <span>Square 2</span>
+        </div>
+        <div class="square">
+          <span>Square 3</span>
+        </div>
+        <div class="square">
+          <span>Square 4</span>
+        </div>
+        <div class="square">
+          <span>Square 5</span>
+        </div>
+        <div class="square">
+          <span>Square 6</span>
+        </div>
+        <div class="square">
+          <span>Square 7</span>
+        </div>
+        <div class="square">
+          <span>Square 8</span>
+        </div>
+        <div class="square">
+          <span>Square 9</span>
+        </div>
+      </div>
+      <div class="load-more">
+        <input type="button" id="load-more" value="Load More" data-page="2" />
+      </div>
+      <div class="pagination">
+        <ul>
+           <!-- As it is the first page, only have links to the next and last pages. -->
+          <li><a href="lazy-loading-squares-button-page-2.html">Next page</a></li>
+          <li><a href="lazy-loading-squares-button-page-3.html">Last page</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <script>
+      'use strict';
+
+      // Listen to the button click
+      document.getElementById('load-more').addEventListener('click',function(e){
+
+        // Call the function - pass on the value for 'data-page', so the function knows what page to load. We will also parse the value as an integer
+        buttonClicked(parseInt(this.getAttribute('data-page')));
+      });
+
+      // The function that will change the 'load more' and change button's 'data-page' attribute so it is ready for the next page
+      const buttonClicked = (page) => {
+
+        // Initial logging in console, so we know it has been called.
+        console.log('Button clicked. Loading page: '+page);
+
+        document.getElementById('square-container').lastElementChild.focus(null,true);
+
+        // Only change attributes and load more items when the page is 3 (pre-defined for PoC) or less
+        if(page <= 3){  
+
+          // Set the 'data-page' attribute to current +1 (next page)
+          document.getElementById('load-more').setAttribute('data-page',page+1);
+
+          // Call the function to get the data and create the squares
+          loadSquares(page);
+
+        }
+        
+        // If it is the last page, hide the button 
+        if(page==3){ 
+          document.getElementById('load-more').style.display = 'none';
+        }
+      }
+
+      // The function that will deal with the JSON and create the squares / HTML
+      const loadSquares = (page) => {
+
+        // Get the data by reading the JSON from the JSON container at bottom of the source code - and only store the data we require
+        const data = JSON.parse(document.getElementById('squares-data').innerHTML)['page-'+page];
+
+        // Logging to review whether it works and what data is shown
+        console.log(data);
+
+        // For each entry within the array (data, JSON), we will create a square
+        data.forEach(entry => {
+
+          // Create the square (div element)
+          let square = document.createElement('div');
+
+          // Set the class
+          square.setAttribute('class','square');
+
+          // Create the contents of the square (span element)
+          let content = document.createElement('span');
+        
+          // insert the content (name of square in this instance)
+          content.innerHTML = entry;
+
+          // push the content into the div
+          square.appendChild(content);
+
+          //Append the square to the container, so it is shown to the user
+          document.getElementById('square-container').appendChild(square);
+        });
+
+
+      }
+
+    </script>
+    <!-- Storing some data in JSON, to avoid having to use external files. -->
+    <script type="application/ld+json" id="squares-data">
+      {
+        "page-2":[
+          "Square 10",
+          "Square 11",
+          "Square 12",
+          "Square 13",
+          "Square 14",
+          "Square 15",
+          "Square 16",
+          "Square 17",
+          "Square 18"
+        ],
+        "page-3":[
+          "Square 19",
+          "Square 20",
+          "Square 21",
+          "Square 22",
+          "Square 23",
+          "Square 24",
+          "Square 25",
+          "Square 26",
+          "Square 27"
+        ]
+      }
+    </script>
+  </body>
+</html>

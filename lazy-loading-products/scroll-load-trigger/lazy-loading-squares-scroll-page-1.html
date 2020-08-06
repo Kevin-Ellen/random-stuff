@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PLP with lazy-loading squares (products) - Scroll - Page 1 - Proof of concept | Croud</title>
+    <style>
+      .container{
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 5px;
+        row-gap: 5px;
+        max-width:1024px;
+      }
+
+      .square{
+        position: relative;
+        background: rgba(0,100,0,.5);
+      }
+
+      .square:nth-of-type(odd){
+        background: rgba(0,0,100,.5);
+      }
+
+      /* Making squares square */
+      .square::before{
+        content: '';
+        padding-bottom: 100%;
+        display: block;
+      }
+
+      .square > span{
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 100%;
+        text-align: center;
+      }
+
+      /* Hiding pagination */
+      .pagination{
+        display:none;
+      }
+
+    </style>
+  </head>
+  <body >
+    <h1>Page 1: PLP with lazy-loading squares/products - using scroll</h1>
+    <p>When the user scrolls down the page and the last square (child of the container) is into view, the page will load additional squares (products). There still are HTML navigation links for search engines to ensure that paginated pages can be crawled.</p>
+    <h2>Notes</h2>
+    <p>Search engines will ignore the lazy-loading mechanics of a page, in both cases when a <em>'load more'</em> button is used or whether it is based on scroll-behaviour, hence a solution with HTML pagination should be implemented. This concept has the front-end functionality implemented for users to see more squares while HTML links hidden in the source code will provide search engine support.</p>
+    <p>Failing to implement HTML pagination support for search engines will result in subsequent category pages not to be crawled; ultimately resulting in more products not being discovered and could cause serious crawl issues.</p>
+    <h3>Documentation</h3>
+    <ul>
+      <li>Google Developers - Lazy loading: <a href="https://developers.google.com/search/docs/guides/lazy-loading" target="_blank" rel="noreferrer">https://developers.google.com/search/docs/guides/lazy-loading</a>
+    </ul>
+    <section>
+      <h2>Squares - Page 1</h2>
+      <div id="square-container" class="container">
+        <div class="square">
+          <span>Square 1</span>
+        </div>
+        <div class="square">
+          <span>Square 2</span>
+        </div>
+        <div class="square">
+          <span>Square 3</span>
+        </div>
+        <div class="square">
+          <span>Square 4</span>
+        </div>
+        <div class="square">
+          <span>Square 5</span>
+        </div>
+        <div class="square">
+          <span>Square 6</span>
+        </div>
+        <div class="square">
+          <span>Square 7</span>
+        </div>
+        <div class="square">
+          <span>Square 8</span>
+        </div>
+        <div class="square">
+          <span>Square 9</span>
+        </div>
+      </div>
+      <div class="pagination">
+        <ul>
+          <!-- As it is the first page, only have links to the next and last pages. -->
+          <li><a href="lazy-loading-squares-scroll-page-2.html">Next page</a></li>
+          <li><a href="lazy-loading-squares-scroll-page-3.html">Last page</a></li>
+        </ul>
+      </div>
+    </section>
+
+
+    <script>
+      'use strict';
+
+      // Initial page, which will help us with loading the next pages
+      let page = 1;
+
+      // Monitor the scroll behaviour of a user
+     
+
+      const scrollLoad = () => {
+        
+        // We want to start loading the next set as soon the last element scrolls into view. So we select the last Child element (square) within the container and get how far the top (Y-position) is from the top of the viewport
+        const lastSquare  = document.getElementById('square-container').lastElementChild.getBoundingClientRect().y;
+
+        // We need to know how tall the viewport is, so we know the bottom boundary
+        const viewportHeight = window.innerHeight;
+
+        // How far the top of the lastSquare is from the bottom. If the value is 0, the element scrolls into view
+        const distance = viewportHeight-lastSquare;
+
+        // If the distance is  0, the last element is in view and we need to load more items
+        if(distance > 0){
+
+          // Logging to keep track on what is happening.
+          console.log('Last element into view, load more items');
+
+          // Increment page (next page has been triggered)
+          page++;
+
+          // Add the squares
+          loadSquares(page);
+
+        }
+
+        
+      }
+
+      // The function that will deal with the JSON and create the squares / HTML
+      const loadSquares = (page) => {
+
+        // We first need to remove the EventListener, allow a delay while the additional squares are being added (not needed in this case, but larger datasets will require this. We will also log this.
+        console.log('Removing EventListener on scroll to allow load to happen.');
+        window.removeEventListener('scroll', scrollLoad);
+
+        // Get the data by reading the JSON from the JSON container at bottom of the source code - and only store the data we require
+        const data = JSON.parse(document.getElementById('squares-data').innerHTML)['page-'+page];
+
+        // Logging to review whether it works and what data is shown
+        console.log(data);
+
+        // For each entry within the array (data, JSON), we will create a square
+        data.forEach(entry => {
+
+          // Create the square (div element)
+          let square = document.createElement('div');
+
+          // Set the class
+          square.setAttribute('class','square');
+
+          // Create the contents of the square (span element)
+          let content = document.createElement('span');
+        
+          // insert the content (name of square in this instance)
+          content.innerHTML = entry;
+
+          // push the content into the div
+          square.appendChild(content);
+
+          //Append the square to the container, so it is shown to the user
+          document.getElementById('square-container').appendChild(square);
+        });
+
+        // If any page before the last page is loaded, add the eventListener back in
+        if(page < 3){
+          
+          // Logging to keep track of what is happening.
+          console.log('Not the last page, EventListener on scroll is added back');
+          
+          // Remove the event listener as it is not needed anymore
+          window.addEventListener('scroll', scrollLoad);
+        }
+      }
+
+    // Apply the EvenListener to the window
+    window.addEventListener('scroll', scrollLoad);
+
+    </script>
+    <!-- Storing some data in JSON, to avoid having to use external files. -->
+    <script type="application/ld+json" id="squares-data">
+      {
+        "page-2":[
+          "Square 10",
+          "Square 11",
+          "Square 12",
+          "Square 13",
+          "Square 14",
+          "Square 15",
+          "Square 16",
+          "Square 17",
+          "Square 18"
+        ],
+        "page-3":[
+          "Square 19",
+          "Square 20",
+          "Square 21",
+          "Square 22",
+          "Square 23",
+          "Square 24",
+          "Square 25",
+          "Square 26",
+          "Square 27"
+        ]
+      }
+    </script>
+  </body>
+</html>
