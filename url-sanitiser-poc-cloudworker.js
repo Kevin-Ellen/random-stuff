@@ -1,56 +1,45 @@
+/*
+  Using Cloudflare workers to implement URL sanitisation / normalisation
+*/
+
+// Configuration of the rules we want
+const trailing = true; // config flag to check whether we always want a trailing slash or not. In this case, we want a trailing slash
+const scheme = 'https'; // config flag to show what scheme we want to use. In this case the secure 'https' scheme
+const host = 'www.example.com'; // config flag for the host (full domain). We want URLs to redirect to the host 'www.example.com'
+
+const redirCode = 301; // Config flag for the redirect status code. Recommended is '301' (permanent)
+
+// Listen to the event and handle the request; keeping this as simple as possible
 addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+});
 
-  // confi flag to check whether we always want a trailing slash or not. In this case, we want a trailing slash
-  const trailing = true;
+const handleRequest = async (request) => {
+  // Retrieve the requested URL from the event and store it as a non-mutable object
+  const originalUrl = new URL(request.url);
 
-  // Retrieving the requested URL from the event and saving it as a const to check change later
-  const url = new URL(event.request.url);
+  // Retrieve the requested URL from the event and store it as a mutuble object
+  let newUrl = new URL(request.url);
 
-  // Checking if protocol is HTTPS, if not - change to HTTPS
-  const protocol = url.protocol === 'https:' ? url.protocol : 'https:';
+  // Test and store the right scheme
+  newUrl.protocol = newUrl.protocol === scheme ? newUrl.protocol : scheme;
 
-  // Checking if hostname is what we want it to be, if not - change to what we want
-  const hostname = url.hostname === 'www.example.com' ? url.hostname : 'www.example.com';
+  // Test and store the right host
+  newUrl.host = newUrl.host === host ? newUrl.host : host;
 
-  // Ensuring that full path is lowercase
-  let pathname = url.pathname.toLowerCase();
+  // Ensure that the path is fully lowercase
+  newUrl.pathname = newUrl.pathname.toLowerCase();
 
-  // check the configuration of the trailing slash and handle it.
-  if(trailing==true){
-    pathname = pathname.substr(-1) === '/' ? pathname : pathname+'/';
-  }else{
-    pathname = pathname.substr(-1) === '/' ? pathname.slice(0, -1) : pathname;
+  // Trailing slash test - if trailing slash === true, add trailing slash, otherwise remove it
+  newUrl.pathname = trailing ? newUrl.pathname.replace(/\/?$/, '/') : newUrl.pathname.replace(/\/?$/, '');
+
+  // Check if the URL has changed - if it has changed, redirect. Need to stringify to use comparison operator as we are comparing objects
+  if(JSON.stringify(originalUrl) !== JSON.stringify(newUrl)){
+    
+    // Return the redirect response to the event handler - with the new URL and new status code.
+    return Response.redirect(newUrl, redirCode);
   }
 
-  // Get the QSP, so we don't lose tracking parameters etc
-  const search = url.search;
-
-  // Construct the new URL as a nice object.
-  const newURL = new URL(protocol + '//' + hostname + pathname + search);
-
-
-  // Console logging for checks
-  console.log(url);
-  console.log('protocol: '+newURL.protocol);
-  console.log('hostname: '+newURL.hostname);
-  console.log('pathname: '+newURL.pathname);
-  console.log('QSE: '+newURL.search);
-
-  if(url!==newURL){
-    // if the URLs don't match, redirect to the new URL with the correct items
-    event.respondWith(redirectRequest(newURL));
-  }else{
-    // if the URLs match, do what you normally do.
-    event.respondWith(handleRequest(event.request));
-  }
-})
-
-// Do your normal stuff
-const handleRequest =  async (request) => {
-  return new Response('hello world', {status: 200})
-}
-
-// Redirect to sanitised URL
-const redirectRequest =  async (request) => {
-  return Response.redirect(request, 301)
+  // URLs are the same, URL sanitasation is not needed and normal duty can resume
+  return new Response('Hello world!', {status: 200})
 }
